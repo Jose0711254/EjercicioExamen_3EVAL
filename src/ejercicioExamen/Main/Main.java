@@ -43,7 +43,7 @@ public class Main {
                     try {
                         despedirProfesional();
                     } catch (ProfesionalNoEncontradoException e) {
-                        System.out.println("ERROR: " + e.getMessage());
+                        System.err.println("ERROR: " + e.getMessage());
                     }
                     break;
 
@@ -53,7 +53,7 @@ public class Main {
 
                 case "5":
                     System.out.println("Saliendo del programa...");
-                    break;
+                    return;
 
                 default:
                     System.out.println("Opción inválida, intentalo de nuevo");
@@ -64,7 +64,8 @@ public class Main {
     private static void contratarJugador() {
         System.out.println("Introduce el nombre del jugador: ");
         String nombre = sc.nextLine();
-        double salarioBase = Double.parseDouble(("Salario base: ") + Jugador.getSalarioBase());
+        System.out.println("Introduce el salario del jugador: ");
+        double salarioBase = Double.parseDouble(sc.nextLine());
 
         System.out.println("POSICIONES: 1. PORTERO 2. DEFENSA 3. CENTROCAMPISTA 4. DELANTERO");
         String posOp = sc.nextLine();
@@ -92,7 +93,7 @@ public class Main {
             plantilla.add(new Jugador(nombre, salarioBase, posicion));
             System.out.println("Jugador agregado: " + nombre);
         } catch (PresupuestoExcedidoException e) {
-            System.out.println("ERROR: " + e.getMessage());
+            System.err.println("ERROR: " + e.getMessage());
 
         }
     }
@@ -109,32 +110,48 @@ public class Main {
             plantilla.add(new Tecnico(nombre, salario, puesto));
             System.out.println("Tecnico agregado: " + nombre);
         }catch (PresupuestoExcedidoException e){
-            System.out.println("ERROR: " + e.getMessage());
+            System.err.println("ERROR: " + e.getMessage());
         }
     }
 
     private static void despedirProfesional() {
         System.out.println("Introduce el nombre del profesional: ");
         String nombre = sc.nextLine();
-        for (Profesional profesional : plantilla){
-            if (profesional.getNombre().equals(nombre)){
-                plantilla.remove(profesional);
-            }else{
-                throw new ProfesionalNoEncontradoException("No se ha encontrado al jugador");
+        boolean encontrado = false;
+        for (int i = 0; i<plantilla.size();i++){
+            if (plantilla.get(i).getNombre().equalsIgnoreCase(nombre)){
+                plantilla.remove(i);
+                System.out.println("El profesional " + nombre + " ha sido despedido.");
+                encontrado = true;
+                break;
             }
         }
     }
 
     public static void verNominasTotales(){
         if (plantilla.isEmpty()){
-            System.out.println("No existe el jugador");
+            System.out.println("No existen jugadores aún.");
             return;
         }
 
         System.out.println("\n --- LISTADO DE NÓMINAS ---");
         double gastoTotalClub = 0;
 
-        for ()
+        for (Profesional profesional : plantilla){
+            String rol = "";
+            if (profesional instanceof Jugador){
+                rol = "Jugador (" + ((Jugador) profesional).getPosicion() + ")";
+            } else if (profesional instanceof Tecnico) {
+                rol = "Técnico (" + ((Tecnico) profesional).getPuesto() + ")";
+            }
+
+            double salarioTotal = profesional.calcularPlusSalarial();
+            gastoTotalClub += salarioTotal;
+
+            System.out.println("Nombre: " + profesional.getNombre() + " | Rol: " + rol + " | Salario: " + salarioTotal + "€ (Base: " + profesional.calcularPlusSalarial() + "€)");
+        }
+
+        System.out.println("Gasto total: " + gastoTotalClub);
     }
 
     private static void verificarPresupuesto(double nuevoSalarioBase) throws PresupuestoExcedidoException {
@@ -158,7 +175,7 @@ public class Main {
                 }
                     return valor;
             }catch (NumberFormatException e){
-                System.out.println("Introduce un número decimal válido.");
+                System.err.println("Introduce un número decimal válido.");
             }
         }
     }
